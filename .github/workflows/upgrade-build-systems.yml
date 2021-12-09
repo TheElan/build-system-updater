@@ -24,4 +24,4 @@ jobs:
       - name: Ensure build script version is up to date
         run: ./upgrade-all.sh
         env:
-          GITHUB\_TOKEN: ${{ secrets.GITHUB_TOKEN_PROTECTED_BRANCHES_PUSH }}
+          GITHUB\_TOKEN: ${{ secrets.TOKEN_PUSH_TO_PROTECTED_BRANCHES }}
