@@ -13,8 +13,7 @@ function main() {
   fi 
   git add .
   git commit --message "[ci skip] upgraded build system"
-#  TODO: Uncomment
-#  git push
+  git push
   
   echo "<-- Published changes successfully"
 }

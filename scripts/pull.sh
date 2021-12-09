@@ -10,7 +10,7 @@ function main() {
     pushd "$repository_name"
       git fetch origin master
       git reset origin/master
-      git clean -df
+      git clean -df # "-d" - recurse into directories; "-f" force in case of submodules or "clean.requireForce" set to true  
     popd
   else
     git clone --depth 2 "$repository_url"
