@@ -5,21 +5,23 @@ function main() {
   repository_root="$(dirname "$(readlink --canonicalize "${0}")")"
   
   pull_script="$repository_root/scripts/pull.sh"
-  failed_pull_list_file="$repository_root/failed-pulls.list"
+  reports_directory="$repository_root/reports"
+  failed_pull_list_file="$reports_directory/failed-pulls.list"
   
   upgrade_script="$repository_root/scripts/upgrade.sh"
-  failed_upgrade_list_file="$repository_root/failed-upgrades.list"
+  failed_upgrade_list_file="$reports_directory/failed-upgrades.list"
   
   publish_script="$repository_root/scripts/publish.sh"
-  failed_publish_list_file="$repository_root/failed-publishes.list"
+  failed_publish_list_file="$reports_directory/failed-publishes.list"
   
-  repositories_directory="$repository_root/repositories"
+  repositories_directory="/tmp/org-build-system-update/repositories"
   repositories_list_file="$repository_root/repositories.list"
   repositories="$(cat "$repositories_list_file")"
 
   echo "---> Upgrading all repositories"
 
   rm --force "$failed_pull_list_file" "$failed_upgrade_list_file" "$failed_publish_list_file"
+  mkdir --parents "$repositories_directory" "$reports_directory"
   pushd "$repositories_directory"
   
     pull_each_with "$pull_script" "$repositories" "$failed_pull_list_file"
@@ -80,7 +82,7 @@ function upgrade_with() {
   exit_code=$?
   if [[ $exit_code != 0 ]]; then
       echo "$repository_name" >> "$failed_upgrade_list_file"
-        echo "<-! Upgrading $repository_name failed"
+      echo "<-! Upgrading $repository_name failed"
   fi
   set -e
 }
@@ -91,11 +93,11 @@ function publish_changes() {
   failed_publish_list_file=$3
 
   set +e
-  $upgrade_script
+  $publish_script
   exit_code=$?
   if [[ $exit_code != 0 ]]; then
       echo "$repository_name" >> "$failed_publish_list_file"
-        echo "<-! Publishing $repository_name failed"
+      echo "<-! Publishing $repository_name failed"
   fi
   set -e
 }

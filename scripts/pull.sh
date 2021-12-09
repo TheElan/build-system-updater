@@ -7,8 +7,11 @@ function main() {
   
   echo "--> Pulling $repository_name"
   if [[ -d "$repository_name" ]]; then
-    git fetch origin master
-    git reset origin/master
+    pushd "$repository_name"
+      git fetch origin master
+      git reset origin/master
+      git clean -df
+    popd
   else
     git clone --depth 2 "$repository_url"
   fi 

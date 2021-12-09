@@ -1,5 +1,3 @@
 repositories
 .idea
-failed-upgrades.list
-failed-pulls.list
-failed-publishes.list
+reports
