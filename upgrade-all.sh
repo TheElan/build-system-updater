@@ -1,0 +1,119 @@
+#!/bin/bash
+set -eu
+
+function main() {
+  repository_root="$(dirname "$(readlink --canonicalize "${0}")")"
+  
+  pull_script="$repository_root/scripts/pull.sh"
+  failed_pull_list_file="$repository_root/failed-pulls.list"
+  
+  upgrade_script="$repository_root/scripts/upgrade.sh"
+  failed_upgrade_list_file="$repository_root/failed-upgrades.list"
+  
+  publish_script="$repository_root/scripts/publish.sh"
+  failed_publish_list_file="$repository_root/failed-publishes.list"
+  
+  repositories_directory="$repository_root/repositories"
+  repositories_list_file="$repository_root/repositories.list"
+  repositories="$(cat "$repositories_list_file")"
+
+  echo "---> Upgrading all repositories"
+
+  rm --force "$failed_pull_list_file" "$failed_upgrade_list_file" "$failed_publish_list_file"
+  pushd "$repositories_directory"
+  
+    pull_each_with "$pull_script" "$repositories" "$failed_pull_list_file"
+    if [[ -f "$failed_pull_list_file" ]]; then
+     
+      echo "<-! Failed to pull:";
+      cat "$failed_pull_list_file"
+      exit 1
+    fi
+  
+    for_each_repository upgrade_with "$upgrade_script" "$failed_upgrade_list_file"
+    if [[ -f "$failed_upgrade_list_file" ]]; then
+     
+      echo "<-! Failed to upgrade:";
+      cat "$failed_upgrade_list_file"
+      exit 1
+    fi
+      
+    for_each_repository publish_changes "$publish_script" "$failed_publish_list_file"
+    if [[ -f "$failed_publish_list_file" ]]; then
+      echo "<-! Failed to publish changes:";
+      cat "$failed_publish_list_file"
+      exit 1
+    fi
+
+  popd
+
+  echo "<--- Upgrade finished successfully"
+}
+
+function pull_each_with() {
+  pull_script=$1
+  repositories=$2
+  failed_pull_list_file=$3
+
+  set +e
+  for repository_url in $repositories
+  do
+    repository_name="$(basename "$repository_url" .git)"
+
+    $pull_script "$repository_url" "$repository_name"
+    exit_code=$?
+    if [[ $exit_code != 0 ]]; then
+        echo "$repository_name" >> "$failed_pull_list_file"
+        echo "<-! Pulling $repository_name failed"
+    fi
+  done
+  set -e
+}
+
+function upgrade_with() {
+  repository_name=$1
+  upgrade_script=$2
+  failed_upgrade_list_file=$3
+
+  set +e
+  $upgrade_script
+  exit_code=$?
+  if [[ $exit_code != 0 ]]; then
+      echo "$repository_name" >> "$failed_upgrade_list_file"
+        echo "<-! Upgrading $repository_name failed"
+  fi
+  set -e
+}
+
+function publish_changes() {
+  repository_name=$1
+  publish_script=$2
+  failed_publish_list_file=$3
+
+  set +e
+  $upgrade_script
+  exit_code=$?
+  if [[ $exit_code != 0 ]]; then
+      echo "$repository_name" >> "$failed_publish_list_file"
+        echo "<-! Publishing $repository_name failed"
+  fi
+  set -e
+}
+
+function for_each_repository() {
+    command=$1
+    shift
+
+    for repository_url in $repositories
+    do
+      repository_name="$(basename "$repository_url" .git)"
+      
+      pushd "$repository_name"
+        # shellcheck disable=SC2068
+        $command "$repository_name" $@
+      popd
+    done
+}
+
+# shellcheck disable=SC2068
+main $@
