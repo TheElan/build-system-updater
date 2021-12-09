@@ -2,19 +2,23 @@ name: Upgrade build systems
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'  # every day at midnight
 
 jobs:
   buildscript-maintenance:
     if: contains('["Dream-Master","mitchej123","Dream-Master",]', github.actor)
     runs-on: ubuntu-latest
-    container: eclipse-temurin:8u312-b07-jdk
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
+          
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+          cache: gradle
 
       - name: Setup git user
         run: |
