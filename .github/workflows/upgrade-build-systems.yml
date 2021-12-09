@@ -1,0 +1,27 @@
+name: Upgrade build systems
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # every day at midnight
+
+jobs:
+  buildscript-maintenance:
+    if: contains('["Dream-Master","mitchej123","Dream-Master",]', github.actor)
+    runs-on: ubuntu-latest
+    container: eclipse-temurin:8u312-b07-jdk
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Setup git user
+        run: |
+          git config user.name "GitHub CI Bot"
+          git config user.email "<>"
+
+      - name: Ensure build script version is up to date
+        run: ./upgrade-all.sh
+        env:
+          GITHUB\_TOKEN: ${{ secrets.GITHUB_TOKEN_PROTECTED_BRANCHES_PUSH }}
