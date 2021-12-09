@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eu
 
+
+
 main() {
   repository_root="$(dirname "$(readlink --canonicalize "${0}")")"
   
@@ -16,7 +18,8 @@ main() {
   
   repositories_directory="/tmp/org-build-system-update/repositories"
   repositories_list_file="$repository_root/repositories.list"
-  repositories="$(cat "$repositories_list_file")"
+  # "-t" Remove a trailing DELIM from each line read (default newline)
+  mapfile -t REPOSITORIES < "$repositories_list_file" 
 
   echo "---> Upgrading all repositories"
 
@@ -24,7 +27,7 @@ main() {
   mkdir --parents "$repositories_directory" "$reports_directory"
   pushd "$repositories_directory"
   
-    pull_each_with "$pull_script" "$repositories" "$failed_pull_list_file"
+    pull_each_with "$pull_script" "$failed_pull_list_file"
     if [[ -f "$failed_pull_list_file" ]]; then
      
       echo "<-! Failed to pull:";
@@ -54,11 +57,10 @@ main() {
 
 pull_each_with() {
   pull_script=$1
-  repositories=$2
-  failed_pull_list_file=$3
+  failed_pull_list_file=$2
 
   set +e
-  for repository_url in $repositories
+  for repository_url in "${REPOSITORIES[@]}"
   do
     repository_name_with_extension="${repository_url##*/}"
     repository_name="${repository_name_with_extension%.*}"
@@ -107,7 +109,7 @@ for_each_repository() {
     command=$1
     shift
 
-    for repository_url in $repositories
+    for repository_url in "${REPOSITORIES[@]}"
     do
       repository_name_with_extension="${repository_url##*/}"
       repository_name="${repository_name_with_extension%.*}"
