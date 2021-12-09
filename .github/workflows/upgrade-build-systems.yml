@@ -18,7 +18,6 @@ jobs:
         with:
           java-version: '8'
           distribution: 'adopt'
-          cache: gradle
 
       - name: Setup git user
         run: |
