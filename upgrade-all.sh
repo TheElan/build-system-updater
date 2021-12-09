@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-function main() {
+main() {
   repository_root="$(dirname "$(readlink --canonicalize "${0}")")"
   
   pull_script="$repository_root/scripts/pull.sh"
@@ -52,7 +52,7 @@ function main() {
   echo "<--- Upgrade finished successfully"
 }
 
-function pull_each_with() {
+pull_each_with() {
   pull_script=$1
   repositories=$2
   failed_pull_list_file=$3
@@ -60,7 +60,8 @@ function pull_each_with() {
   set +e
   for repository_url in $repositories
   do
-    repository_name="$(basename "$repository_url" .git)"
+    repository_name_with_extension="${repository_url##*/}"
+    repository_name="${repository_name_with_extension%.*}"
 
     $pull_script "$repository_url" "$repository_name"
     exit_code=$?
@@ -72,7 +73,7 @@ function pull_each_with() {
   set -e
 }
 
-function upgrade_with() {
+upgrade_with() {
   repository_name=$1
   upgrade_script=$2
   failed_upgrade_list_file=$3
@@ -87,7 +88,7 @@ function upgrade_with() {
   set -e
 }
 
-function publish_changes() {
+publish_changes() {
   repository_name=$1
   publish_script=$2
   failed_publish_list_file=$3
@@ -102,13 +103,14 @@ function publish_changes() {
   set -e
 }
 
-function for_each_repository() {
+for_each_repository() {
     command=$1
     shift
 
     for repository_url in $repositories
     do
-      repository_name="$(basename "$repository_url" .git)"
+      repository_name_with_extension="${repository_url##*/}"
+      repository_name="${repository_name_with_extension%.*}"
       
       pushd "$repository_name"
         # shellcheck disable=SC2068

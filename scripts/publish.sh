@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-function main() {
+main() {
   repository_url=$(git remote get-url origin)
   repository_name="$(basename "$repository_url" .git)"
   
