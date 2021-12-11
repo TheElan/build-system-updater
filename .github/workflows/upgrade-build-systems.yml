@@ -20,8 +20,11 @@ jobs:
         run: |
           git config user.name "GitHub CI Bot"
           git config user.email "<>"
+          git config --global url."https://api:$TOKEN@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://ssh:$TOKENN@github.com/".insteadOf "ssh://git@github.com/"
+          git config --global url."https://git:$TOKEN@github.com/".insteadOf "git@github.com:"
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN_PROTECTED_BRANCHES_PUSH }}
 
       - name: Ensure build script version is up to date
         run: ./upgrade-all.sh
-        env:
-          GITHUB\_TOKEN: ${{ secrets.GITHUB_TOKEN_PROTECTED_BRANCHES_PUSH }}
