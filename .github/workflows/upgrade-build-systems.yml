@@ -2,19 +2,22 @@ name: Upgrade build systems
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'  # every day at midnight
 
 jobs:
   buildscript-maintenance:
     if: contains('["Dream-Master","mitchej123","Dream-Master",]', github.actor)
     runs-on: ubuntu-latest
-    container: eclipse-temurin:8u312-b07-jdk
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 1
+          
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
 
       - name: Setup git user
         run: |
@@ -24,7 +27,4 @@ jobs:
           git config --global url."https://ssh:$TOKENN@github.com/".insteadOf "ssh://git@github.com/"
           git config --global url."https://git:$TOKEN@github.com/".insteadOf "git@github.com:"
         env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN_PROTECTED_BRANCHES_PUSH }}
-
-      - name: Ensure build script version is up to date
-        run: ./upgrade-all.sh
+          TOKEN: ${{ secrets.TOKEN_PUSH_TO_PROTECTED_BRANCHES }}
