@@ -28,3 +28,6 @@ jobs:
           git config --global url."https://git:$TOKEN@github.com/".insteadOf "git@github.com:"
         env:
           TOKEN: ${{ secrets.TOKEN_PUSH_TO_PROTECTED_BRANCHES }}
+
+      - name: Ensure build script version is up to date
+        run: ./upgrade-all.sh
